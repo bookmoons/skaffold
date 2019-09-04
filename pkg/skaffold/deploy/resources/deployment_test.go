@@ -30,44 +30,59 @@ func TestDeploymentCheckStatus(t *testing.T) {
 	rolloutCmd := "kubectl --context kubecontext rollout status deployment dep --namespace test --watch=false"
 	tests := []struct {
 		description    string
-		command        util.Command
+		commands        util.Command
 		expectedErr    string
 		expectedReason string
 		complete       bool
 	}{
 		{
 			description: "rollout status success",
-			command: testutil.NewFakeCmd(t).
-				WithRunOut(rolloutCmd, "deployment dep successfully rolled out"),
+			commands: testutil.CmdRunOut(
+				rolloutCmd,
+				"deployment dep successfully rolled out",
+				),
 			expectedReason: "deployment dep successfully rolled out",
 			complete:       true,
-		}, {
+		},
+		{
 			description: "resource not complete",
-			command: testutil.NewFakeCmd(t).
-				WithRunOut(rolloutCmd, "Waiting for replicas to be available"),
+			commands: testutil.CmdRunOut(
+				rolloutCmd,
+				"Waiting for replicas to be available",
+				),
 			expectedReason: "Waiting for replicas to be available",
-		}, {
+		},
+		{
 			description: "no output",
-			command: testutil.NewFakeCmd(t).
-				WithRunOut(rolloutCmd, ""),
-		}, {
+			commands: testutil.CmdRunOut(
+				rolloutCmd,
+				"",
+				),
+		},
+		{
 			description: "rollout status error",
-			command: testutil.NewFakeCmd(t).
-				WithRunOutErr(rolloutCmd, "", fmt.Errorf("error")),
+			commands: testutil.CmdOutErr(
+				rolloutCmd,
+				"",
+				fmt.Errorf("error"),
+				),
 			expectedErr: "error",
 			complete:    true,
 		},
 		{
 			description: "rollout kubectl client connection error",
-			command: testutil.NewFakeCmd(t).
-				WithRunOutErr(rolloutCmd, "", fmt.Errorf("Unable to connect to the server")),
+			commands: testutil.CmdOutErr(
+			  rolloutCmd,
+			  "",
+			  fmt.Errorf("Unable to connect to the server"),
+			  ),
 			expectedReason: "KubectlConnection",
 		},
 	}
 
 	for _, test := range tests {
 		testutil.Run(t, test.description, func(t *testutil.T) {
-			t.Override(&util.DefaultExecCommand, test.command)
+			t.Override(&util.DefaultExecCommand, test.commands)
 			r := Deployment{ResourceObj: &ResourceObj{namespace: "test", name: "dep"}}
 			runCtx := &runcontext.RunContext{
 				KubeContext: "kubecontext",
