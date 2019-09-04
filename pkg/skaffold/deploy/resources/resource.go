@@ -19,7 +19,6 @@ package resources
 import (
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/color"
 	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/util"
@@ -37,7 +36,7 @@ type ResourceObj struct {
 }
 
 func (r *ResourceObj) String() string {
-	return fmt.Sprintf("%s/%s in %s", r.rType, r.name, r.namespace)
+	return fmt.Sprintf("%s:%s/%s", r.namespace, r.rType, r.name)
 }
 
 func (r *ResourceObj) Type() string {
@@ -100,7 +99,7 @@ func (rs *Status) Equals(other *Status) bool {
 
 func (rs *Status) String() string {
 	if rs.err != nil {
-		return fmt.Sprintf(" %s", util.Trim(rs.err.Error()))
+		return fmt.Sprintf("%s", util.Trim(rs.err.Error()))
 	}
-	return fmt.Sprintf(" %s", rs.details)
+	return fmt.Sprintf("%s", rs.details)
 }

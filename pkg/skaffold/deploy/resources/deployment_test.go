@@ -61,7 +61,7 @@ func TestDeploymentCheckStatus(t *testing.T) {
 		},
 		{
 			description: "rollout status error",
-			commands: testutil.CmdOutErr(
+			commands: testutil.CmdRunOutErr(
 				rolloutCmd,
 				"",
 				fmt.Errorf("error"),
@@ -71,7 +71,7 @@ func TestDeploymentCheckStatus(t *testing.T) {
 		},
 		{
 			description: "rollout kubectl client connection error",
-			commands: testutil.CmdOutErr(
+			commands: testutil.CmdRunOutErr(
 				rolloutCmd,
 				"",
 				fmt.Errorf("Unable to connect to the server"),

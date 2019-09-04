@@ -49,12 +49,12 @@ func TestReportSinceLastUpdated(t *testing.T) {
 			description: "updating an error status",
 			message:     "cannot pull image",
 			err:         fmt.Errorf("cannot pull image"),
-			expected:    " - deployment/test is pending due to cannot pull image\n",
+			expected:    " - test-ns:deployment/test cannot pull image\n",
 		},
 		{
 			description: "updating a non error status",
 			message:     "is waiting for container",
-			expected:    " - deployment/test is pending due to is waiting for container\n",
+			expected:    " - test-ns:deployment/test is waiting for container\n",
 		},
 	}
 	for _, test := range tests {
@@ -77,7 +77,7 @@ func TestReportSinceLastUpdatedMultipleTimes(t *testing.T) {
 		{
 			description: "report first time should write to out",
 			times:       1,
-			expected:    " - deployment/test is pending due to cannot pull image\n",
+			expected:    " - test-ns:deployment/test cannot pull image\n",
 		},
 		{
 			description: "report 2nd time should not write to out",
