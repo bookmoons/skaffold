@@ -23,6 +23,7 @@ import (
 
 	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/kubectl"
 	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/runner/runcontext"
+	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/util"
 )
 
 const (
@@ -67,7 +68,7 @@ func (d *Deployment) Deadline() time.Duration {
 }
 
 func parseKubectlError(errMsg string) (string, string) {
-	errMsg = strings.TrimSuffix(errMsg, "\n")
+	errMsg = util.Trim(errMsg)
 	if strings.Contains(errMsg, "Unable to connect to the server") {
 		return KubectlConnection, errMsg
 	}

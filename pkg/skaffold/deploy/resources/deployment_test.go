@@ -30,7 +30,7 @@ func TestDeploymentCheckStatus(t *testing.T) {
 	rolloutCmd := "kubectl --context kubecontext rollout status deployment dep --namespace test --watch=false"
 	tests := []struct {
 		description    string
-		commands        util.Command
+		commands       util.Command
 		expectedErr    string
 		expectedReason string
 		complete       bool
@@ -40,7 +40,7 @@ func TestDeploymentCheckStatus(t *testing.T) {
 			commands: testutil.CmdRunOut(
 				rolloutCmd,
 				"deployment dep successfully rolled out",
-				),
+			),
 			expectedReason: "deployment dep successfully rolled out",
 			complete:       true,
 		},
@@ -49,7 +49,7 @@ func TestDeploymentCheckStatus(t *testing.T) {
 			commands: testutil.CmdRunOut(
 				rolloutCmd,
 				"Waiting for replicas to be available",
-				),
+			),
 			expectedReason: "Waiting for replicas to be available",
 		},
 		{
@@ -57,7 +57,7 @@ func TestDeploymentCheckStatus(t *testing.T) {
 			commands: testutil.CmdRunOut(
 				rolloutCmd,
 				"",
-				),
+			),
 		},
 		{
 			description: "rollout status error",
@@ -65,17 +65,17 @@ func TestDeploymentCheckStatus(t *testing.T) {
 				rolloutCmd,
 				"",
 				fmt.Errorf("error"),
-				),
+			),
 			expectedErr: "error",
 			complete:    true,
 		},
 		{
 			description: "rollout kubectl client connection error",
 			commands: testutil.CmdOutErr(
-			  rolloutCmd,
-			  "",
-			  fmt.Errorf("Unable to connect to the server"),
-			  ),
+				rolloutCmd,
+				"",
+				fmt.Errorf("Unable to connect to the server"),
+			),
 			expectedReason: "KubectlConnection",
 		},
 	}

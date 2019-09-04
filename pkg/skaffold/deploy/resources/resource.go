@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/color"
+	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/util"
 )
 
 const (
@@ -36,7 +37,7 @@ type ResourceObj struct {
 }
 
 func (r *ResourceObj) String() string {
-	return fmt.Sprintf("%s/%s", r.rType, r.name)
+	return fmt.Sprintf("%s/%s in %s", r.rType, r.name, r.namespace)
 }
 
 func (r *ResourceObj) Type() string {
@@ -47,8 +48,8 @@ func (r *ResourceObj) UpdateStatus(msg string, reason string, err error) {
 	newStatus := Status{details: msg, reason: reason, err: err}
 	if !r.status.Equals(&newStatus) {
 		r.status.err = err
-		r.status.details = strings.TrimSuffix(msg, "\n")
-		r.status.reason = strings.TrimSuffix(reason, "\n")
+		r.status.details = util.Trim(msg)
+		r.status.reason = util.Trim(reason)
 		r.status.updated = true
 	}
 }
@@ -94,12 +95,12 @@ func (rs *Status) Error() error {
 }
 
 func (rs *Status) Equals(other *Status) bool {
-	return strings.TrimSuffix(rs.reason, "\n") == strings.TrimSuffix(other.reason, "\n")
+	return util.Trim(rs.reason) == util.Trim(other.reason)
 }
 
 func (rs *Status) String() string {
 	if rs.err != nil {
-		return fmt.Sprintf("is pending due to %s", strings.TrimSuffix(rs.err.Error(), "\n"))
+		return fmt.Sprintf(" %s", util.Trim(rs.err.Error()))
 	}
-	return fmt.Sprintf("is pending due to %s", rs.details)
+	return fmt.Sprintf(" %s", rs.details)
 }

@@ -29,6 +29,7 @@ import (
 	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/deploy/resources"
 	pkgkubernetes "github.com/GoogleContainerTools/skaffold/pkg/skaffold/kubernetes"
 	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/runner/runcontext"
+	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -202,7 +203,7 @@ func (c *Checker) printStatusCheckSummary(r Resource) {
 			fmt.Sprintf("%s failed %s. Error: %s.",
 				r.String(),
 				waitingMsg,
-				strings.TrimSuffix(err.Error(), "\n"),
+				util.Trim(err.Error()),
 			),
 		)
 	} else {

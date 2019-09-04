@@ -33,6 +33,7 @@ func TestUpdateTimestamp(t *testing.T) {
 
 	// Update the status
 	dep.UpdateStatus("success", "success", nil)
+
 	// Check the updated bool is true
 	testutil.CheckDeepEqual(t, true, dep.status.updated)
 }
@@ -49,7 +50,8 @@ func TestReportSinceLastUpdated(t *testing.T) {
 			message:     "cannot pull image",
 			err:         fmt.Errorf("cannot pull image"),
 			expected:    " - deployment/test is pending due to cannot pull image\n",
-		}, {
+		},
+		{
 			description: "updating a non error status",
 			message:     "is waiting for container",
 			expected:    " - deployment/test is pending due to is waiting for container\n",
@@ -76,7 +78,8 @@ func TestReportSinceLastUpdatedMultipleTimes(t *testing.T) {
 			description: "report first time should write to out",
 			times:       1,
 			expected:    " - deployment/test is pending due to cannot pull image\n",
-		}, {
+		},
+		{
 			description: "report 2nd time should not write to out",
 			times:       2,
 			expected:    "",
@@ -110,26 +113,31 @@ func TestUpdateStatus(t *testing.T) {
 			old:          Status{details: "Waiting for 0/1 replicas to be available...", reason: "Waiting for 0/1 replicas to be available...", err: nil},
 			new:          Status{details: "Waiting for 0/1 replicas to be available...", reason: "Waiting for 0/1 replicas to be available...", err: nil},
 			expectChange: false,
-		}, {
+		},
+		{
 			description:  "updated should be true if reason changes",
 			old:          Status{details: "same", reason: "same", err: nil},
 			new:          Status{details: "same", reason: "another", err: nil},
 			expectChange: true,
-		}, {
+		},
+		{
 			description: "updated should be false if reason is same",
 			old:         Status{details: "same", reason: "same", err: nil},
 			new:         Status{details: "same", reason: "same", err: fmt.Errorf("see this error")},
-		}, {
+		},
+		{
 			description:  "updated should be true if reason and err change",
 			old:          Status{details: "same", reason: "same", err: nil},
 			new:          Status{details: "same", reason: "another", err: fmt.Errorf("see this error")},
 			expectChange: true,
-		}, {
+		},
+		{
 			description:  "updated should be true if both reason and details change",
 			old:          Status{details: "same", reason: "same", err: nil},
 			new:          Status{details: "error", reason: "error", err: nil},
 			expectChange: true,
-		}, {
+		},
+		{
 			description:  "updated should be false if both reason has a new line",
 			old:          Status{details: "same", reason: "same\n", err: nil},
 			new:          Status{details: "same", reason: "same", err: nil},

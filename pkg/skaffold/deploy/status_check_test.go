@@ -69,7 +69,8 @@ func TestFetchDeployments(t *testing.T) {
 				resources.NewDeployment("dep1", "test", 10*time.Second),
 				resources.NewDeployment("dep2", "test", 20*time.Second),
 			},
-		}, {
+		},
+		{
 			description: "command flag deadline is less than resources.Deployment spec.",
 			deps: []*appsv1.Deployment{
 				{
