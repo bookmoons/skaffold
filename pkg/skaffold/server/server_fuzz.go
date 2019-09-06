@@ -7,26 +7,28 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"sync"
 
-	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/config"
-	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/constants"
+	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/util"
+	"github.com/pkg/errors"
 )
 
 // FuzzTCP fuzzes binary requests to the control API.
 func FuzzTCP(fuzz []byte) int {
+	// Ignore empty fuzz
+	if len(fuzz) == 0 {
+		return -1
+	}
+
 	// Start control API server
-	shutdown, err := Initialize(config.SkaffoldOptions{
-		EnableRPC:   true,
-		RPCPort:     constants.DefaultRPCPort,
-		RPCHTTPPort: constants.DefaultRPCHTTPPort,
-	})
+	port, shutdown, err := startFuzzServer()
 	if err != nil {
 		panic(err)
 	}
 	defer shutdown()
 
 	// Connect to control API
-	hostport := fmt.Sprintf("localhost:%d", constants.DefaultRPCHTTPPort)
+	hostport := fmt.Sprintf("localhost:%d", port)
 	connection, err := net.Dial("tcp", hostport)
 	if err != nil {
 		panic(err)
@@ -53,11 +55,7 @@ func FuzzHTTP(fuzz []byte) int {
 	}
 
 	// Start control API server
-	shutdown, err := Initialize(config.SkaffoldOptions{
-		EnableRPC:   true,
-		RPCPort:     constants.DefaultRPCPort,
-		RPCHTTPPort: constants.DefaultRPCHTTPPort,
-	})
+	port, shutdown, err := startFuzzServer()
 	if err != nil {
 		panic(err)
 	}
@@ -65,7 +63,7 @@ func FuzzHTTP(fuzz []byte) int {
 
 	// Deliver fuzz
 	client := &http.Client{}
-	address := fmt.Sprintf("http://localhost/%s", path)
+	address := fmt.Sprintf("http://localhost:%d/%s", port, path)
 	request, err := http.NewRequest(method, address, bytes.NewReader(body))
 	if err != nil {
 		return -1
@@ -80,6 +78,39 @@ func FuzzHTTP(fuzz []byte) int {
 		return 0
 	}
 	return 1
+}
+
+func startFuzzServer() (
+	port int,
+	shutdown func(),
+	err error,
+) {
+	// Start gRPC server
+	rpcPort := util.GetAvailablePort(0, &sync.Map{})
+	rpcShutdown, err := newGRPCServer(rpcPort)
+	if err != nil {
+		return 0, func() {
+			rpcShutdown()
+		}, errors.Wrap(err, "starting gRPC server")
+	}
+	m := &sync.Map{}
+	m.Store(rpcPort, true)
+
+	// Start HTTP server
+	httpPort := util.GetAvailablePort(0, m)
+	httpShutdown, err := newHTTPServer(httpPort, rpcPort)
+
+	// Prepare shutdown routine
+	shutdown = func() {
+		httpShutdown()
+		rpcShutdown()
+	}
+	if err != nil {
+		return 0, shutdown, errors.Wrap(err, "starting HTTP server")
+	}
+
+	// Return server details
+	return httpPort, shutdown, nil
 }
 
 func decodeFuzzRequest(fuzz []byte) (
