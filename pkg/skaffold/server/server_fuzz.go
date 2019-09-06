@@ -4,13 +4,15 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
-	"sync"
 
-	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/util"
-	"github.com/pkg/errors"
+	"github.com/GoogleContainerTools/skaffold/proto"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"google.golang.org/grpc"
 )
 
 // FuzzTCP fuzzes binary requests to the control API.
@@ -22,13 +24,13 @@ func FuzzTCP(fuzz []byte) int {
 
 	// Start control API server
 	port, shutdown, err := startFuzzServer()
+	defer shutdown()
 	if err != nil {
 		panic(err)
 	}
-	defer shutdown()
 
 	// Connect to control API
-	hostport := fmt.Sprintf("localhost:%d", port)
+	hostport := fmt.Sprintf("localhost:%s", port)
 	connection, err := net.Dial("tcp", hostport)
 	if err != nil {
 		panic(err)
@@ -36,6 +38,10 @@ func FuzzTCP(fuzz []byte) int {
 
 	// Deliver fuzz
 	_, err = connection.Write(fuzz)
+	if err != nil {
+		return 0
+	}
+	_, err = ioutil.ReadAll(connection)
 	if err != nil {
 		return 0
 	}
@@ -63,7 +69,7 @@ func FuzzHTTP(fuzz []byte) int {
 
 	// Deliver fuzz
 	client := &http.Client{}
-	address := fmt.Sprintf("http://localhost:%d/%s", port, path)
+	address := fmt.Sprintf("http://localhost:%s/%s", port, path)
 	request, err := http.NewRequest(method, address, bytes.NewReader(body))
 	if err != nil {
 		return -1
@@ -81,36 +87,104 @@ func FuzzHTTP(fuzz []byte) int {
 }
 
 func startFuzzServer() (
-	port int,
+	port string,
 	shutdown func(),
 	err error,
 ) {
-	// Start gRPC server
-	rpcPort := util.GetAvailablePort(0, &sync.Map{})
-	rpcShutdown, err := newGRPCServer(rpcPort)
-	if err != nil {
-		return 0, func() {
-			rpcShutdown()
-		}, errors.Wrap(err, "starting gRPC server")
+	// Prepare shutdown routine
+	componentShutdowns := []func(){}
+	shutdown = func() {
+		for _, componentShutdown := range componentShutdowns {
+			componentShutdown()
+		}
 	}
-	m := &sync.Map{}
-	m.Store(rpcPort, true)
+
+	// Start RPC server
+	rpcPort, rpcShutdown, err := startFuzzRPCServer()
+	if rpcShutdown != nil {
+		componentShutdowns = append(
+			[]func(){rpcShutdown},
+			componentShutdowns...,
+		)
+	}
+	if err != nil {
+		return
+	}
 
 	// Start HTTP server
-	httpPort := util.GetAvailablePort(0, m)
-	httpShutdown, err := newHTTPServer(httpPort, rpcPort)
-
-	// Prepare shutdown routine
-	shutdown = func() {
-		httpShutdown()
-		rpcShutdown()
+	port, httpShutdown, err := startFuzzHTTPServer(rpcPort)
+	if httpShutdown != nil {
+		componentShutdowns = append(
+			[]func(){httpShutdown},
+			componentShutdowns...,
+		)
 	}
+	return
+}
+
+func startFuzzRPCServer() (
+	port string,
+	shutdown func(),
+	err error,
+) {
+	listener, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
-		return 0, shutdown, errors.Wrap(err, "starting HTTP server")
+		return
 	}
+	address := listener.Addr()
+	_, port, err = net.SplitHostPort(address.String())
+	if err != nil {
+		return
+	}
+	rpcServer := grpc.NewServer()
+	proto.RegisterSkaffoldServiceServer(rpcServer, &server{
+		buildIntentCallback:  func() {},
+		deployIntentCallback: func() {},
+		syncIntentCallback:   func() {},
+	})
+	go func() {
+		err := rpcServer.Serve(listener)
+		if err != nil {
+			panic(err)
+		}
+	}()
+	shutdown = func() {
+		rpcServer.Stop()
+		listener.Close()
+	}
+	return
+}
 
-	// Return server details
-	return httpPort, shutdown, nil
+func startFuzzHTTPServer(rpcPort string) (
+	port string,
+	shutdown func(),
+	err error,
+) {
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+	err = proto.RegisterSkaffoldServiceHandlerFromEndpoint(
+		context.Background(),
+		mux,
+		fmt.Sprintf("localhost:%s", rpcPort),
+		opts,
+	)
+	if err != nil {
+		return
+	}
+	listener, err := net.Listen("tcp", "localhost:0")
+	if err != nil {
+		return
+	}
+	address := listener.Addr()
+	_, port, err = net.SplitHostPort(address.String())
+	if err != nil {
+		return
+	}
+	go http.Serve(listener, mux)
+	shutdown = func() {
+		listener.Close()
+	}
+	return
 }
 
 func decodeFuzzRequest(fuzz []byte) (
