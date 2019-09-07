@@ -48,9 +48,9 @@ jobs:
     - stage: Fuzz regression
       go: 1.12.x
       dist: bionic
-      script: ./fuzzit.sh local-regression
+      script: ./hack/fuzzit.sh local-regression
     - stage: Fuzz
       if: branch = master AND type IN (push)
       go: 1.12.x
       dist: bionic
-      script: ./fuzzit.sh fuzzing
+      script: ./hack/fuzzit.sh fuzzing
