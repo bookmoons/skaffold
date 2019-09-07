@@ -22,7 +22,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 # Configure
-NAME=PACKAGENAME
+NAME=skaffold
 ROOT=.
 TYPE=$1
 
