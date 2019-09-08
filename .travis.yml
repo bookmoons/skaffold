@@ -46,11 +46,11 @@ jobs:
     #   script:
     #     - make integration-in-kind
     - stage: Fuzz regression
-      go: 1.12.x
+      go: 1.13.x
       dist: bionic
       script: ./hack/fuzzit.sh local-regression
     - stage: Fuzz
       if: branch = master AND type IN (push)
-      go: 1.12.x
+      go: 1.13.x
       dist: bionic
       script: ./hack/fuzzit.sh fuzzing
