@@ -2,6 +2,7 @@
 set -xe
 
 # Setup
+go get -u -v golang.org/x/net/proxy
 go install \
 	github.com/dvyukov/go-fuzz/go-fuzz \
 	github.com/dvyukov/go-fuzz/go-fuzz-build \
