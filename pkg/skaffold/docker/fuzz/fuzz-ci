@@ -1,0 +1,17 @@
+#!/bin/bash
+set -xe
+
+# Setup
+go get -u -v golang.org/x/net/proxy
+go install \
+	github.com/dvyukov/go-fuzz/go-fuzz \
+	github.com/dvyukov/go-fuzz/go-fuzz-build \
+	github.com/fuzzitdev/fuzzit/v2
+./fuzz-gopath
+export GOPATH=$PWD/gopath
+export GO111MODULES=off
+
+# Fuzz
+go-fuzz-build -libfuzzer -o fuzzer.a .
+clang -fsanitize=fuzzer fuzzer.a -o fuzzer
+fuzzit create job --type ${1} skaffold/parse-reference fuzzer

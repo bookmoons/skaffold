@@ -58,5 +58,5 @@ jobs:
       dist: bionic
       go: 1.13
       script:
-        - cd pkg/skaffold/config/fuzz
+        - cd pkg/skaffold/docker/fuzz
         - ./fuzz-ci local-regression
