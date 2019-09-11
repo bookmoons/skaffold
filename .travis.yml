@@ -45,12 +45,16 @@ jobs:
     #     - chmod +x ${HOME}/bin/kind
     #   script:
     #     - make integration-in-kind
-    - stage: Fuzz regression
+    # - stage: Fuzz regression
+    #   dist: bionic
+    #   go: 1.12.x
+    #   script: ./hack/fuzzit.sh local-regression
+    # - stage: Fuzz
+    #   if: branch = master AND type IN (push)
+    #   dist: bionic
+    #   go: 1.12.x
+    #   script: ./hack/fuzzit.sh fuzzing
+    - stage: Test fuzz
       dist: bionic
       go: 1.12.x
-      script: ./hack/fuzzit.sh local-regression
-    - stage: Fuzz
-      if: branch = master AND type IN (push)
-      dist: bionic
-      go: 1.12.x
-      script: ./hack/fuzzit.sh fuzzing
+      script: ./pkg/skaffold/config/fuzz/fuzz-ci

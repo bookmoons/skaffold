@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e -x
+
+# Hacky way to make go-fuzz work with modules.
+go1.13 mod vendor -v
+rm -rf gopath
+mkdir -p gopath/src/
+mv vendor/*/ gopath/src/
+rm -rf vendor
