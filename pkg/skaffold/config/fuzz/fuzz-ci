@@ -2,7 +2,7 @@
 set -xe
 
 # Setup
-go1.13 install \
+go install \
 	github.com/dvyukov/go-fuzz/go-fuzz \
 	github.com/dvyukov/go-fuzz/go-fuzz-build \
 	github.com/fuzzitdev/fuzzit/v2

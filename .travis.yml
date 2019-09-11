@@ -56,5 +56,5 @@ jobs:
     #   script: ./hack/fuzzit.sh fuzzing
     - stage: Test fuzz
       dist: bionic
-      go: 1.12.x
+      go: 1.13
       script: ./pkg/skaffold/config/fuzz/fuzz-ci
