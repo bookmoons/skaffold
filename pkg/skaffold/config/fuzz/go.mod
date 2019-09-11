@@ -10,7 +10,6 @@ require (
 	github.com/GoogleContainerTools/skaffold v0.0.0-00010101000000-000000000000
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dvyukov/go-fuzz v0.0.0-20190808141544-193030f1cb16
-	github.com/dvyukov/go-fuzz/go-fuzz-dep v0.0.0
 	github.com/elazarl/go-bindata-assetfs v1.0.0 // indirect
 	github.com/fuzzitdev/fuzzit/v2 v2.4.46 // indirect
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
