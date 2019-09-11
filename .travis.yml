@@ -5,7 +5,7 @@ services:
 
 language: go
 go: "1.12.x"
-# go_import_path: /skaffold
+go_import_path: /skaffold
 
 git:
   submodules: false
@@ -16,41 +16,41 @@ git:
 
 jobs:
   include:
-    # - os: linux
-    #   name: "checks"
-    #   script:
-    #     - make checks
-    # - os: linux
-    #   name: "Linux unit"
-    #   script:
-    #     - make
-    #     - make coverage
-    # - os: osx
-    #   name: "OSX unit"
-    #   script:
-    #     - make
-    #     - make quicktest
-    # - os: windows
-    #   name: "Windows unit"
-    #   env:
-    #     - GO111MODULE=on
-    #     - GOFLAGS="-mod=vendor"
-    #   script:
-    #     - go build -o out/skaffold.exe cmd/skaffold/skaffold.go
-    #     - go test -short -timeout 60s ./...
-    # - os: linux
-    #   name: "integration"
-    #   before_install:
-    #     - curl -Lo ${HOME}/bin/kind https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-linux-amd64
-    #     - chmod +x ${HOME}/bin/kind
-    #   script:
-    #     - make integration-in-kind
-    - stage: Fuzz regression
-      go: 1.13.x
-      dist: bionic
-      script: ./hack/fuzzit.sh local-regression
-    - stage: Fuzz
-      if: branch = master AND type IN (push)
-      go: 1.13.x
-      dist: bionic
-      script: ./hack/fuzzit.sh fuzzing
+    - os: linux
+      name: "checks"
+      script:
+        - make checks
+    - os: linux
+      name: "Linux unit"
+      script:
+        - make
+        - make coverage
+    - os: osx
+      name: "OSX unit"
+      script:
+        - make
+        - make quicktest
+    - os: windows
+      name: "Windows unit"
+      env:
+        - GO111MODULE=on
+        - GOFLAGS="-mod=vendor"
+      script:
+        - go build -o out/skaffold.exe cmd/skaffold/skaffold.go
+        - go test -short -timeout 60s ./...
+    - os: linux
+      name: "integration"
+      before_install:
+        - curl -Lo ${HOME}/bin/kind https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-linux-amd64
+        - chmod +x ${HOME}/bin/kind
+      script:
+        - make integration-in-kind
+    # - stage: Fuzz regression
+    #   go: 1.13.x
+    #   dist: bionic
+    #   script: ./hack/fuzzit.sh local-regression
+    # - stage: Fuzz
+    #   if: branch = master AND type IN (push)
+    #   go: 1.13.x
+    #   dist: bionic
+    #   script: ./hack/fuzzit.sh fuzzing
