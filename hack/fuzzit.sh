@@ -45,7 +45,7 @@ function fuzz {
     ./fuzzit create job --type $TYPE $NAME/$TARGET fuzzer
 }
 fuzz "" parse-config pkg/skaffold/config
-# fuzz "" parse-reference pkg/skaffold/docker
-# fuzz "" parse-jdwp pkg/skaffold/debug
+fuzz "" parse-reference pkg/skaffold/docker
+fuzz "" parse-jdwp pkg/skaffold/debug
 # fuzz TCP control-api-tcp pkg/skaffold/server
 # fuzz HTTP control-api-http pkg/skaffold/server
