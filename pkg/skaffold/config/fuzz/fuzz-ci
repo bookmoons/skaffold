@@ -1,13 +1,16 @@
 #!/bin/bash
 set -xe
 
+# Configure
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
 # Setup
 go get -u -v golang.org/x/net/proxy
 go install \
 	github.com/dvyukov/go-fuzz/go-fuzz \
 	github.com/dvyukov/go-fuzz/go-fuzz-build \
 	github.com/fuzzitdev/fuzzit/v2
-./fuzz-gopath
+$DIR/fuzz-gopath
 export GOPATH=$PWD/gopath
 export GO111MODULES=off
 
