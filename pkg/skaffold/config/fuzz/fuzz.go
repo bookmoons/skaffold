@@ -1,3 +1,5 @@
+// +build gofuzz
+
 /*
 Copyright 2019 The Skaffold Authors
 
