@@ -59,4 +59,4 @@ jobs:
       go: 1.13
       script:
         - cd pkg/skaffold/config/fuzz
-        - ./fuzz-ci
+        - ./fuzz-ci local-regression
