@@ -11,7 +11,7 @@ go install \
 	github.com/dvyukov/go-fuzz/go-fuzz-build \
 	github.com/fuzzitdev/fuzzit/v2
 $DIR/fuzz-gopath
-export GOPATH=$PWD/gopath
+export GOPATH=$DIR/gopath
 export GO111MODULES=off
 
 # Fuzz
